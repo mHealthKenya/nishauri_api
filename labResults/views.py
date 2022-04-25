@@ -115,7 +115,7 @@ def check_lab(value):
             "ccc_number": value
         }
 
-        url = "https://mlab.kenyahmis.co.ke/api/ushauri/get/results"
+        url = "https://mlab.kenyahmis.org/api/get/results"
         headers = {
             'content-type': "application/json",
             'Accept': 'application/json'
