@@ -1,0 +1,46 @@
+version: '3'
+
+networks:
+  development:
+  
+services:
+  database:
+    image: postgres:13.1-alpine
+    container_name: nishauridb
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test123
+      - POSTGRES_DB=nishauri
+    networks:
+      - development
+
+  python:
+    build:
+      context: .
+      dockerfile: python.dockerfile
+    container_name: nishauri-api      
+    volumes:
+      - .:/project    
+    depends_on:
+      - database
+    ports:
+      - "8100:8000"
+    networks:
+      - development
+      
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8100/"]
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 10
+        python manage.py makemigrations --merge
+        sleep 10
+        python manage.py migrate --noinput
+        sleep 10
+        python manage.py runserver 0.0.0.0:8000      
