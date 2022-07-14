@@ -126,9 +126,11 @@ def signup(request):
         a = check_ccc(request.data['CCCNo'])
         if a == False:
             return Response({"success": False, "error": "Invalid CCC number"}, status=status.HTTP_400_BAD_REQUEST)
+        #print(a)
         if User.objects.filter(CCCNo=request.data['CCCNo']).exists():
             return Response({"success": False, "error": "CCC number already exists. Go to login"},
                             status=status.HTTP_400_BAD_REQUEST)
+        #print("Tesing")
 
         chatData = {
             "firstName": check_ccc(request.data['CCCNo'])["f_name"],
@@ -137,15 +139,15 @@ def signup(request):
             "type": "consumer"
         }
 
-        response = requests.post("http://localhost:5009/users/", data=chatData)
-        print(response.json())
+        #response = requests.post("http://localhost:5009/users/", data=chatData)
+        #print(response.json())
         print(type(check_ccc(request.data['CCCNo'])['f_name']))
         data_copy.update({"first_name": check_ccc(request.data['CCCNo'])["f_name"]})
         data_copy.update({"last_name": check_ccc(request.data['CCCNo'])["l_name"]})
         data_copy.update({"initial_facility": check_ccc(request.data['CCCNo'])["mfl_code"]})
         data_copy.update({"current_facility": check_ccc(request.data['CCCNo'])["mfl_code"]})
-        if response.json()["success"]:
-            data_copy.update({"chat_number": response.json()["user"]["_id"]})
+        #if response.json()["success"]:
+        #    data_copy.update({"chat_number": response.json()["user"]["_id"]})
 
         serializer = UserSerializer(data=data_copy)
         if not serializer.is_valid():
