@@ -15,9 +15,10 @@ services:
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test123
       - POSTGRES_DB=nishauri
+    volumes:
+      - ../scripts/nishauri.sql:/docker-entrypoint-initdb.d/nishauri.sql
     networks:
       - development
-
   python:
     build:
       context: .

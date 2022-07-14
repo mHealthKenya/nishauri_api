@@ -16,7 +16,7 @@ class Facilities(models.Model):
 
 
 class User(AbstractUser):
-    username = None
+    username = models.CharField(null=True, blank=True, max_length=250)
     is_staff = None
     is_superuser = None
     first_name = models.CharField(null=True, blank=True, max_length=250)

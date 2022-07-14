@@ -1,0 +1,31 @@
+name: Deploying ushauri_api test instance.
+on:
+  push:
+    branches: [master]
+jobs:
+  build:
+      name: Deploy
+      runs-on: ubuntu-latest
+      steps:
+      - name: excecuting remote connection
+        uses: appleboy/ssh-action@master
+        with:
+            host: ${{ secrets.HOST }}
+            username: ${{ secrets.USERNAME }}
+            key : ${{ secrets.CICD_SECRET }}
+            port : ${{ secrets.PORT }}
+            script: |
+                  git config --global --add safe.directory /apps/github-workflows/mhealth-apps/nishauri_api/      
+                  cd /apps/github-workflows/mhealth-apps/nishauri_api/
+                  git pull origin master
+                  git status
+                  cp /apps/dockerApps/nishauri_api-ssl/python.dockerfile /apps/github-workflows/mhealth-apps/nishauri_api/
+                  cp /apps/dockerApps/nishauri_api-ssl/nginx.dockerfile /apps/github-workflows/mhealth-apps/nishauri_api/
+                  cp /apps/dockerApps/nishauri_api-ssl/entrypoint.sh /apps/github-workflows/mhealth-apps/nishauri_api/
+                  cp /apps/dockerApps/nishauri_api-ssl/requirements.txt /apps/github-workflows/mhealth-apps/nishauri_api/
+                  cp /apps/dockerApps/nishauri_api-ssl/docker-compose.yml /apps/github-workflows/mhealth-apps/nishauri_api/
+                  cp -r /apps/dockerApps/nishauri_api-ssl/docker /apps/github-workflows/mhealth-apps/nishauri_api/
+                  cp /apps/dockerApps/nishauri_api-ssl/Nishauri_API/settings.py /apps/github-workflows/mhealth-apps/nishauri_api/Nishauri_API/
+                  docker-compose down
+                  docker-compose rm -f
+                  docker-compose up -d --build

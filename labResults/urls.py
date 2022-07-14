@@ -7,5 +7,7 @@ urlpatterns = [
     url('lab/dep-vload', views.get_dep_vload, name='vload-dep'),
     url('lab/eid', views.get_eid, name='eid'),
 
+    
+    url('lab/get/eid', views.pull_eid, name='sync-eid-pull'),
     url('lab/get/vload', views.saveLabs, name='vload-sync')
 ]

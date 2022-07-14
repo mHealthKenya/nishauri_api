@@ -1,4 +1,5 @@
 import datetime
+import json
 from datetime import datetime
 
 import requests
@@ -10,6 +11,7 @@ from rest_framework.response import Response
 from .models import *
 from authApp.models import *
 from .serializer import *
+
 
 
 @api_view(['GET'])
@@ -66,13 +68,23 @@ def get_dep_vload(request):
 @api_view(['GET'])
 def get_eid(request):
     if request.method == 'GET':
-        ret = []
         d = Dependants.objects.filter(user=request.user, approved="Approved")
-        for a in d:
-            c = check_lab(a.heiNumber)
+        
+        r = EidResults.objects.filter(dependant__in=d, result_type="2").order_by('-date_sent')
+        print(r)
+        serializer = EidSerializer(r, many=True)
+        for i in range(len(serializer.data)):
+            serializer.data[i].update({"dependant": Dependants.objects.get(id=serializer.data[i]["dependant"]).first_name + " " + Dependants.objects.get(id=serializer.data[i]["dependant"]).surname})
+        return Response(data={"data": serializer.data}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def pull_eid(request):
+    if request.method == 'GET':
+        dependants = Dependants.objects.filter(approved="Approved")
+        for dependant in dependants:
+            c = check_lab(dependant.heiNumber)
             if c == {'message': 'No results for the given CCC Number were found'}:
-                c.update({"hei": a.heiNumber})
-                # ret.append(c)
                 continue
             for it in range(len(c["results"])):
                 r = EidResults.objects.filter(r_id=c["results"][it]["id"])
@@ -94,19 +106,7 @@ def get_eid(request):
                         data.date_collected = None
 
                     data.save()
-            r = EidResults.objects.filter(dependant=a, result_type="2").order_by('-date_sent')
-            serializer = EidSerializer(r, many=True)
-            for i in range(len(serializer.data)):
-                serializer.data[i].update({"dependant": a.first_name + " " + a.surname})
-            for v in serializer.data:
-                ret.append(v)
-
-        r = EidResults.objects.filter(dependant__in=d, result_type="2").order_by('-date_sent')
-        print(r)
-        serializer = EidSerializer(r, many=True)
-        for i in range(len(serializer.data)):
-            serializer.data[i].update({"dependant": Dependants.objects.get(id=serializer.data[i]["dependant"]).first_name + " " + Dependants.objects.get(id=serializer.data[i]["dependant"]).surname})
-        return Response(data={"data": serializer.data}, status=status.HTTP_200_OK)
+    return Response(data={"data": "Done"}, status=status.HTTP_200_OK)
 
 
 def check_lab(value):
@@ -115,14 +115,14 @@ def check_lab(value):
             "ccc_number": value
         }
 
-        url = "https://mlab.kenyahmis.org/api/get/results"
+        url = "https://mlab.kenyahmis.org/api/ushauri/get/results"
         headers = {
             'content-type': "application/json",
             'Accept': 'application/json'
         }
-        response = requests.post(url, data=user, json=headers, verify=False)
-        print(response.json())
-        return response.json()
+        response = requests.post(url, data=user, json=headers, verify=False, )
+        print(response.text)
+        return json.loads(response.text)
     except ConnectionError as e:
         print(e)
 
@@ -172,4 +172,10 @@ def saveSyncVl(result, user, o):
                 data.date_sent = datetime.strptime(result["results"][it]["created_at"].split(" ")[0], '%Y-%m-%d')
             except AttributeError:
                 data.date_sent = None
+
+            try:
+                data.date_collected = datetime.strptime(result["results"][it]["date_collected"].split(" ")[0], '%Y-%m-%d')
+            except Exception:
+                data.date_collected = None
+            
             data.save()

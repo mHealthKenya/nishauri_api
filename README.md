@@ -29,7 +29,7 @@ Once `pip` has finished downloading the dependencies:
 (env)$ cd Nishauri_API
 ```
 
-Update database crentials save and run migrations:
+Update database credentials to save and run migrations:
 ```
 (env)$ nano settings
 (env)$ cd ..
@@ -41,7 +41,7 @@ Run the server:
 ```
 (env)$ python manage.py runserver
 ```
-And navigate to `http://127.0.0.1:8000/api .
+And navigate to `http://127.0.0.1:8000/api.
 
 ALL SET.
 
